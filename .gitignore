@@ -1,0 +1,7 @@
+.env
+.venv/
+__pycache__/
+*.egg-info/
+test/
+test.py
+temp_chroma_db/

@@ -1,0 +1,27 @@
+version: '3.11'
+
+networks:
+  default:
+    driver: bridge
+    name: ${COMPOSE_PROJECT_NAME}
+
+services:
+  doc-manager:
+    build:
+      context: .
+      dockerfile: dev/Dockerfile
+    container_name: "${USERNAME}_doc-manager-dev"
+    volumes:
+      - ${PROJECT_DIR}:/doc-manager
+      - ${DOCKER_SOCKET_PATH}:/var/run/docker.sock
+    cap_add:
+      - SYS_ADMIN
+    command: ["tail", "-f", "/dev/null"]  # keep docker running
+    restart: unless-stopped
+    deploy:
+      mode: global
+    ports:
+      - "8501:8501"
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOST_PATH=${PROJECT_DIR}

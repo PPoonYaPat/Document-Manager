@@ -1,0 +1,28 @@
+[project]
+name = "DocManager"
+version = "0.1.0"
+description = "PDF Document Manager integrated with LLM and RAG allowing user to edit any specific part of file and retrieve information"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "autogen_agentchat>=0.7.2",
+    "autogen_core>=0.7.2",
+    "autogen_ext>=0.7.2",
+    "aiofiles>=24.1.0",
+    "jiter>=0.10.0",
+    "openai>=1.99.9",
+    "regex>=2025.7.34",
+    "tiktoken>=0.11.0",
+    "anthropic>=0.64.0",
+    "beautifulsoup4>=4.13.4",
+    "boto3>=1.40.11",
+    "botocore>=1.40.11",
+    "chromadb>=1.0.17",
+    "fastapi>=0.116.1",
+    "PyMuPDF>=1.26.3",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.4",
+    "uvicorn>=0.35.0",
+    "voyageai>=0.3.4"
+]
