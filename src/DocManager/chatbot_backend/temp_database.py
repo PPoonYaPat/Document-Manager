@@ -206,13 +206,13 @@ class TempDatabase:
             print(f"Error deleting memory: {e}")
             raise
 
-    def query_memory(self, query: str, page: Optional[int] = None) -> List[Dict[str, Any]]:
+    def query_memory(self, query: str, page: List[int] | None = None) -> List[Dict[str, Any]]:
         print(f"Querying memory for query: '{query}'")
         try:
             # Build where clause for filtering
             where_clause = {}
             if page is not None:
-                where_clause = {"page": {"$eq": page}}
+                where_clause = {"page": {"$in": page}}
 
             if where_clause:
                 results = self.collection.query(
@@ -228,7 +228,7 @@ class TempDatabase:
             
             # Format results
             formatted_results = []
-            if results['ids'][0]:
+            if results['ids'] and results['ids'][0]:
                 for i in range(len(results['ids'][0])):
                     formatted_results.append({
                         "page": results['metadatas'][0][i]['page'],

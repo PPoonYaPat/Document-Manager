@@ -82,7 +82,7 @@ editable_html_template = """
             background: white;
             border: 1px solid #ccc;
             border-radius: 5px;
-            height: 700px;
+            height: 800px;
             overflow-y: auto;
             display: none;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
@@ -229,7 +229,7 @@ editable_html_template = """
 
         .chat-container {
             width: 100%;
-            height: 600px;
+            height: 700px;
             background-color: #fff;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -244,7 +244,6 @@ editable_html_template = """
             overflow-y: auto;
             border-bottom: 1px solid #ddd;
             margin-bottom: 20px;
-            min-height: 0;
         }
 
         .message {
@@ -283,48 +282,215 @@ editable_html_template = """
             cursor: not-allowed;
         }
 
-        .input-container {
+        .chat-input-container {
+            padding: 16px 0;
+        }
+
+        .chat-input {
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            margin-bottom: 16px;
+            font-family: inherit;
+            background: transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .rag-controls {
+            margin-bottom: 16px;
+        }
+
+        .rag-header {
+            margin-bottom: 16px;
+        }
+
+        .rag-toggle-container {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            gap: 12px;
+        }
+
+        .rag-checkbox {
+            display: none;
+        }
+
+        .rag-toggle-slider {
+            position: relative;
+            width: 48px;
+            height: 26px;
+            background: #e5e7eb;
+            border-radius: 26px;
+            transition: all 0.3s ease;
+        }
+
+        .rag-toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: white;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+
+        .rag-checkbox:checked + .rag-toggle-slider {
+            background: #6366f1;
+        }
+
+        .rag-checkbox:checked + .rag-toggle-slider::before {
+            transform: translateX(22px);
+        }
+
+        .rag-label {
+            font-weight: 500;
+            color: #374151;
+            font-size: 15px;
+        }
+
+        .rag-options {
+            animation: slideDown 0.3s ease;
+            padding-left: 8px;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-mode-options {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            gap: 8px;
+            padding: 8px 0;
+            transition: all 0.2s ease;
+        }
+
+        .radio-option:hover .radio-label {
+            color: #6366f1;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-custom {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 50%;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-custom {
+            border-color: #6366f1;
+            background: #6366f1;
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-custom::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .radio-label {
+            font-size: 14px;
+            color: #6b7280;
+            transition: color 0.2s ease;
+        }
+
+        .page-range-section {
+            padding-top: 12px;
+            margin-left: 8px;
+        }
+
+        .range-inputs {
+            display: flex;
+            gap: 16px;
+            align-items: end;
+        }
+
+        .input-group {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            flex-shrink: 0;
-            justify-content: center;
-            align-items: center;
+            gap: 6px;
         }
 
-        .input-container input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+        .input-group label {
+            font-size: 13px;
+            color: #6b7280;
+            font-weight: 500;
         }
 
-        .input-container button {
-            padding: 10px 20px;
+        .input-group input {
+            width: 80px;
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .send-button {
+            background: #6366f1;
+            color: white;
             border: none;
-            background-color: #007bff;
-            color: #fff;
-            border-radius: 4px;
+            border-radius: 10px;
+            padding: 12px 24px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            margin-left: auto;
+            box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .editor-container {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .gjs-editor-container {
-                width: 100%;
-                max-width: 800px;
-            }
-            
-            .style-manager-panel {
-                width: 100%;
-                max-width: 800px;
-                height: 400px;
-            }
+        .send-button:hover {
+            background: #5855eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .send-button:active {
+            transform: translateY(0);
         }
     </style>
 </head>
@@ -1079,11 +1245,21 @@ editable_html_template = """
             const input = document.getElementById(`message-input-${className}`);
             const button = document.querySelector(`#input-container-${className} button`);
             const message = input.value;
+            const rag_input = getRAGSettings(className);
+
+            if (rag_input && rag_input[0] == -1) {
+                alert("Start page must be less than end page and between 1 and ffff-length");
+                return;
+            }
 
             const result = extractSelectedContent(className);
             console.log(result);
 
-            displayMessage(message, 'user', className);
+            if (rag_input) {
+                displayMessage(message, 'user', className, "(rag: " + (rag_input[0] + 1) + " - " + (rag_input[rag_input.length - 1] + 1) + ")");
+            } else {
+                displayMessage(message, 'user', className);
+            }
 
             input.value = '';
             input.disabled = true;
@@ -1099,7 +1275,8 @@ editable_html_template = """
                     body: JSON.stringify({
                         components: result,
                         message: message,
-                        tag: "llm_call"
+                        tag: "llm_call",
+                        rag_range: getRAGSettings(className)
                     })
                 });
 
@@ -1125,7 +1302,8 @@ editable_html_template = """
                         body: JSON.stringify({
                             components: extracted_components,
                             message: message,
-                            tag: "tool_response"
+                            tag: "tool_response",
+                            rag_range: null
                         })
                     });
                     data = await response.json();
@@ -1228,7 +1406,7 @@ editable_html_template = """
             });
         }
 
-        function displayMessage(content, source, className) {
+        function displayMessage(content, source, className, rag_content = null) {
             const messagesContainer = document.getElementById(`messages-${className}`);
             const messageElement = document.createElement('div');
             messageElement.className = `message ${source}`;
@@ -1236,15 +1414,79 @@ editable_html_template = """
             const labelElement = document.createElement('span');
             labelElement.className = 'label';
             labelElement.textContent = source;
+            messageElement.appendChild(labelElement);
+
+            if (source == 'user') {
+                const ragElement = document.createElement('div');
+                ragElement.className = 'content';
+                if (rag_content) ragElement.textContent = rag_content;
+                else ragElement.textContent = "(no rag)";
+                messageElement.appendChild(ragElement);
+            }
 
             const contentElement = document.createElement('div');
             contentElement.className = 'content';
             contentElement.textContent = content;
-
-            messageElement.appendChild(labelElement);
             messageElement.appendChild(contentElement);
+
             messagesContainer.appendChild(messageElement);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function initializeRAGMode(className) {
+            const ragToggle = document.getElementById(`rag-mode-${className}`);
+            const pageSelection = document.getElementById(`page-selection-${className}`);
+            const pageRangeInputs = document.getElementById(`page-range-inputs-${className}`);
+            const pageOptions = document.querySelectorAll(`input[name="page-mode-${className}"]`);
+
+            ragToggle.addEventListener('change', function() {
+                pageSelection.style.display = this.checked ? 'block' : 'none';
+                if (!this.checked) {
+                    pageRangeInputs.style.display = 'none';
+                } else {
+                    document.querySelector(`input[name="page-mode-${className}"][value="current"]`).checked = true;
+                }
+            });
+
+            pageOptions.forEach(option => {
+                option.addEventListener('change', function() {
+                    pageRangeInputs.style.display = this.value === 'range' ? 'block' : 'none';
+                });
+            });
+        }
+
+        function getRAGSettings(className) {
+            const ragMode = document.getElementById(`rag-mode-${className}`).checked;
+            if (!ragMode) return null;
+
+            const selectedPageMode = document.querySelector(`input[name="page-mode-${className}"]:checked`).value;
+            const rag_range = [];
+
+            if (selectedPageMode === 'range') {
+                const startPage = parseInt(document.getElementById(`start-page-${className}`).value);
+                const endPage = parseInt(document.getElementById(`end-page-${className}`).value);
+
+                if (isNaN(startPage) || isNaN(endPage) || startPage === '' || endPage === '' || startPage > endPage || startPage < 1 || endPage > ffff-length) {
+                    return [-1];
+                }
+                
+                for (let i = startPage - 1; i <= endPage - 1; i++) {
+                    rag_range.push(i);
+                }
+            }
+
+            if (selectedPageMode === 'current') {
+                const currentPage = parseInt(className.replace('gjs', ''));
+                rag_range.push(currentPage);
+            }
+
+            if (selectedPageMode === 'all') {
+                for (let i = 0; i < ffff-length; i++) {
+                    rag_range.push(i);
+                }
+            }
+
+            return rag_range;
         }
 
         function createEditorTemplate(index) {
@@ -1304,9 +1546,60 @@ editable_html_template = """
                         <div class="panel-section">
                             <div class="chat-container">
                                 <div class="messages" id="messages-gjs${index}"></div>
-                                <div class="input-container" id="input-container-gjs${index}">
-                                    <input type="text" id="message-input-gjs${index}" placeholder="Type a message...">
-                                    <button onclick="sendMessage('gjs${index}')">Send</button>
+                                <div class="chat-input-container" id="input-container-gjs${index}">
+                                    <textarea class="chat-input" id="message-input-gjs${index}" placeholder="Type your message..." rows="3"></textarea>
+                                    <div class="rag-controls" id="rag-controls-gjs${index}">
+                                        <div class="rag-header">
+                                            <label class="rag-toggle-container">
+                                                <input type="checkbox" id="rag-mode-gjs${index}" class="rag-checkbox">
+                                                <span class="rag-toggle-slider"></span>
+                                                <span class="rag-label">RAG Mode</span>
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="rag-options" id="page-selection-gjs${index}" style="display: none;">
+                                            <div class="page-mode-options">
+                                                <label class="radio-option">
+                                                    <input type="radio" name="page-mode-gjs${index}" value="current" checked>
+                                                    <span class="radio-custom"></span>
+                                                    <span class="radio-label">Current Page</span>
+                                                </label>
+                                                
+                                                <label class="radio-option">
+                                                    <input type="radio" name="page-mode-gjs${index}" value="all">
+                                                    <span class="radio-custom"></span>
+                                                    <span class="radio-label">All Pages</span>
+                                                </label>
+                                                
+                                                <label class="radio-option">
+                                                    <input type="radio" name="page-mode-gjs${index}" value="range">
+                                                    <span class="radio-custom"></span>
+                                                    <span class="radio-label">Page Range</span>
+                                                </label>
+                                            </div>
+                                            
+                                            <div class="page-range-section" id="page-range-inputs-gjs${index}" style="display: none;">
+                                                <div class="range-inputs">
+                                                    <div class="input-group">
+                                                        <label>From</label>
+                                                        <input type="number" id="start-page-gjs${index}" min="1" max="3" placeholder="1">
+                                                    </div>
+                                                    <div class="input-group">
+                                                        <label>To</label>
+                                                        <input type="number" id="end-page-gjs${index}" min="1" max="3" placeholder="3">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <button class="send-button" onclick="sendMessage('gjs${index}')">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                                            <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
+                                        </svg>
+                                        Send
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -1510,6 +1803,7 @@ editable_html_template = """
             for (let i = 0; i < ffff-length; i++) {
                 initializePageEditor(`gjs${i}`);
                 setupEventListeners(`gjs${i}`);
+                initializeRAGMode(`gjs${i}`);
             }
         }
 

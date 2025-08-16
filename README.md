@@ -14,7 +14,7 @@ Document Manager is software that allows users to edit PDF documents, integrated
 ## 🔜 Coming Soon
 
 - Interactive Web UI
-- Local OCR model inference on your device
+- Local OCR model run on your device
 
 ## 🚀 Quick Start
 

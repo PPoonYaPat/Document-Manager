@@ -21,6 +21,7 @@ class ConversationMessage(BaseModel):
     components: List[ComponentStyle] | None
     tag: Literal["llm_call", "llm_response", "tool_call", "tool_response"]
     message: str | None
+    rag_range: List[int] | None
 
 
 class ChatbotFeature:
@@ -81,7 +82,8 @@ class ChatbotFeature:
             return ConversationMessage(
                 message=f"Error: {e}" + response.messages[-1].content,
                 components=None,
-                tag="llm_response"
+                tag="llm_response",
+                rag_range=None
             )
 
 
@@ -92,7 +94,7 @@ class ChatbotFeature:
         print(message)
 
         conversation_message.tag = "tool_call"
-        search_result = self.temp_database.query_memory(message)
+        search_result = self.temp_database.query_memory(message, conversation_message.rag_range)
         if conversation_message.components is None:
             conversation_message.components = []
         for result in search_result:
@@ -107,7 +109,7 @@ class ChatbotFeature:
         return conversation_message
 
     async def chat(self, conversation_message: ConversationMessage) -> ConversationMessage:
-        if conversation_message.tag == "llm_call" and "no_rag" not in conversation_message.message.lower():
+        if conversation_message.tag == "llm_call" and conversation_message.rag_range is not None:
             return await self.tool_call(conversation_message)
         else:
             return await self.llm_response(conversation_message)

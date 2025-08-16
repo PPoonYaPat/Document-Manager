@@ -55,7 +55,7 @@ content_path = args.content_dir + "final.html" if args.content_dir.endswith("/")
 
 temp_database = TempDatabase(
     db_path="temp_chroma_db",
-    collection_name="pdf_memories",
+    collection_name=content_path.split("/")[-2].split(".")[0],
     content_path=content_path,
     overwrite=True
 )
