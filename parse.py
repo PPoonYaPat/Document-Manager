@@ -28,15 +28,21 @@ Examples:
         required=True,
         help="Output directory for results"
     )
+
+    parser.add_argument(
+        "-l", "--local-ocr-result-path",
+        required=False,
+        help="Local OCR result path"
+    )
     
     return parser.parse_args()
 
-def validate_file(filename):
+def validate_file(filename: str, file_type: str):
     if not os.path.exists(filename):
         print(f"Error: File '{filename}' not found.")
         return False
-    if not filename.endswith(".pdf"):
-        print(f"Error: File '{filename}' is not a PDF file.")
+    if not filename.endswith(f".{file_type}"):
+        print(f"Error: File '{filename}' is not a {file_type} file.")
         return False
     return True
 
@@ -45,7 +51,10 @@ async def main():
     try:
         args = parse_arguments()
         
-        if not validate_file(args.filename):
+        if not validate_file(args.filename, "pdf"):
+            sys.exit(1)
+
+        if args.local_ocr_result_path is not None and not validate_file(args.local_ocr_result_path, "json"):
             sys.exit(1)
 
         os.makedirs(args.output, exist_ok=True)
@@ -56,6 +65,7 @@ async def main():
         await PDF_Extraction.extract_pdf_without_model(
             input_path=args.filename,
             output_dir=args.output,
+            local_ocr_result_path=args.local_ocr_result_path,
         )
 
         PDF_Extraction.make_editable_document(

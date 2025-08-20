@@ -28,4 +28,7 @@ Here is the required HTML structure:
 Please provide ONLY the HTML code as plain text without any markdown formatting, code blocks, or additional text.
 Please don't use a fix height for the div, you may set only the max-height.
 Calculate the height of the table and chart first, NOT to exceed the given height of the image.
+
+**IMPORTANT** if you are given the table information, it means that the image is a table and you have to follow the data and the structure of the give table HTML code.
+You may change only the style of the table, but you have to keep the data and the structure of the given table HTML code the same.
 """

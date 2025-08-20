@@ -16,18 +16,20 @@ class PDF_Extraction:
         model_client,
         simultaneous_requests: bool = True,
         save_output_on_s3: bool = False,
+        local_ocr_result_path: str | None = None,
         text_limit: int = -1, # If we want to extract the style, we don't need to get the full text which might waste the token used when sending request to the llm model. "-1" means no limit.
     ) -> str:
 
         os.makedirs(output_dir, exist_ok=True)
-        page_info_path = output_dir + "/page_info" if output_dir.endswith("/") else output_dir + "/page_info"
-        
-        Segmentation.call_segmentation(
-            input_path, page_info_path, save_output_on_s3=save_output_on_s3
-        )
-        rect_data, leftmost, rightmost, page_width, page_height = (
-            Segmentation.load_json(page_info_path)
-        )
+        ocr_output_dir = output_dir + "ocr_output" if output_dir.endswith("/") else output_dir + "/ocr_output"
+        basename = os.path.splitext(os.path.basename(input_path))[0]
+
+        if local_ocr_result_path is None:
+            Segmentation.call_segmentation(input_path, ocr_output_dir, save_output_on_s3=save_output_on_s3)
+            rect_data, leftmost, rightmost, page_width, page_height = Segmentation.load_json(input_path, ocr_output_dir + f"/{basename}.json")
+        else:
+            rect_data, leftmost, rightmost, page_width, page_height = Segmentation.load_json(input_path, local_ocr_result_path)
+
         html_generator = HTMLGenerator(
             input_pdf_path=input_path,
             output_dir=output_dir,
@@ -50,18 +52,20 @@ class PDF_Extraction:
         input_path: str,
         output_dir: str,
         save_output_on_s3: bool = False,
+        local_ocr_result_path: str | None = None,
         text_limit: int = -1, # If we want to extract the style, we don't need to get the full text which might waste the token used when sending request to the llm model. "-1" means no limit.
     ) -> str:
 
         os.makedirs(output_dir, exist_ok=True)
-        page_info_path = output_dir + "/page_info" if output_dir.endswith("/") else output_dir + "/page_info"
+        ocr_output_dir = output_dir + "ocr_output" if output_dir.endswith("/") else output_dir + "/ocr_output"
+        basename = os.path.splitext(os.path.basename(input_path))[0]
 
-        Segmentation.call_segmentation(
-            input_path, page_info_path, save_output_on_s3=save_output_on_s3
-        )
-        rect_data, leftmost, rightmost, page_width, page_height = (
-            Segmentation.load_json(page_info_path)
-        )
+        if local_ocr_result_path is None:
+            Segmentation.call_segmentation(input_path, ocr_output_dir, save_output_on_s3=save_output_on_s3)
+            rect_data, leftmost, rightmost, page_width, page_height = Segmentation.load_json(input_path, ocr_output_dir + f"/{basename}.json")
+        else:
+            rect_data, leftmost, rightmost, page_width, page_height = Segmentation.load_json(input_path, local_ocr_result_path)
+            
         html_generator = HTMLGenerator(
             input_pdf_path=input_path,
             output_dir=output_dir,

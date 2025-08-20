@@ -239,7 +239,7 @@ class HTMLGenerator:
         pix = page.get_pixmap(matrix=mat)
         pix.save(file_path)
 
-    # Generate HTML code for non-text (image, table, etc.)
+    # Generate HTML code for non-text (Picture and Table)
     async def generate_non_text_html(
         self,
         rect_data: RectData,
@@ -317,20 +317,24 @@ class HTMLGenerator:
 
         # Generate the model request
         img = Image.from_file(Path(image_path))
-        message1 = MultiModalMessage(
+        message = MultiModalMessage(
             content=[
                 img,
                 f"Here is the text style information:\n{text_styles_format}",
                 f"The class name is {class_name}",
-            ],
-            source="user",
-        )
-        message2 = MultiModalMessage(
-            content=[
                 f"You have to fit the image into the container with the width of {rect_data.x1 - rect_data.x0}pt and a height of {rect_data.y1 - rect_data.y0}pt"
             ],
             source="user",
         )
+
+        if rect_data.type == "Table":
+            message_table = MultiModalMessage(
+                content=[
+                    "This is the table component, you MUST refer to this given HTML for the table information. You only have to decorate this table. You don't have to change the table data and structure.",
+                    rect_data.text
+                ],
+                source="user",
+            )
 
         # If the model client is not None, then we can use the model to generate the HTML code
         if self.model_client is not None:
@@ -338,7 +342,7 @@ class HTMLGenerator:
             self.model_request.append(
                 [
                     class_name,
-                    [message1, message2],
+                    [message] if rect_data.type != "Table" else [message_table, message],
                     image_path,
                     rect_data.x1 - rect_data.x0,
                     rect_data.y1 - rect_data.y0,
@@ -478,7 +482,7 @@ class HTMLGenerator:
         error: int = 3,
     ) -> bool:
 
-        threshold = 1 if coord.type == "text" else 10
+        threshold = 1 if coord.type == "Text" else 10
 
         if self.is_column(
             coord, rect_data, bound_left, bound_right, spans, error=error
@@ -691,9 +695,9 @@ class HTMLGenerator:
             # If it is a row component, then we can directly generate the HTML code and add it to the html_parts list.
             if not self.is_column(rect, rect_data, bound_left, bound_right, spans):
                 if (
-                    rect.type == "text"
-                    or rect.type == "header"
-                    or rect.type == "footer"
+                    rect.type == "Text"
+                    or rect.type == "Page-header"
+                    or rect.type == "Page-footer"
                 ):
                     self.cnt += 1
                     html_parts.append(
@@ -706,7 +710,7 @@ class HTMLGenerator:
                         )
                     )
 
-                elif rect.type == "non-text":
+                elif rect.type == "Picture" or rect.type == "Table":
                     self.cnt += 1
                     html_parts.append(
                         await self.generate_non_text_html(
@@ -744,28 +748,11 @@ class HTMLGenerator:
                     for span in line["spans"]:
                         spans.append(span)
 
-        # Remove text rectangle that is inside non-text (image, table, etc.) rectangle
-        for rect1 in self.rect_data[page_number]:
-            for rect2 in self.rect_data[page_number]:
-                if rect1 != rect2 and rect1.type == "text" and rect2.type != "text":
-                    x_overlap = max(
-                        0, min(rect1.x1, rect2.x1) - max(rect1.x0, rect2.x0)
-                    )
-                    y_overlap = max(
-                        0, min(rect1.y1, rect2.y1) - max(rect1.y0, rect2.y0)
-                    )
-                    overlap_area = x_overlap * y_overlap
-                    rect1_area = (rect1.x1 - rect1.x0) * (rect1.y1 - rect1.y0)
-                    if rect1_area > 0 and overlap_area / rect1_area > 0.95:
-                        if rect1 in self.rect_data[page_number]:
-                            self.rect_data[page_number].remove(rect1)
-                        break
-
         result_html = f"<div class='background-page' id='page_{page_number}'>\n"
 
         # Consider the header part
         header_rect_data = [
-            rect for rect in self.rect_data[page_number] if rect.type == "header"
+            rect for rect in self.rect_data[page_number] if rect.type == "Page-header"
         ]
         if len(header_rect_data) > 0:
             header_y_coordinate = min(rect.y0 for rect in header_rect_data)
@@ -782,7 +769,7 @@ class HTMLGenerator:
         body_rect_data = [
             rect
             for rect in self.rect_data[page_number]
-            if rect.type != "header" and rect.type != "footer"
+            if rect.type != "Page-header" and rect.type != "Page-footer"
         ]
         if len(body_rect_data) > 0:
             body_y_coordinate = min(rect.y0 for rect in body_rect_data)
@@ -795,7 +782,7 @@ class HTMLGenerator:
 
         # Consider the footer part
         footer_rect_data = [
-            rect for rect in self.rect_data[page_number] if rect.type == "footer"
+            rect for rect in self.rect_data[page_number] if rect.type == "Page-footer"
         ]
         if len(footer_rect_data) > 0:
             footer_y_coordinate = min(rect.y0 for rect in footer_rect_data)

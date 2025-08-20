@@ -1360,49 +1360,62 @@ editable_html_template = """
                     }
                 }
 
-                // Apply styles
-                if (component_group.styles) {
-                    Object.entries(component_group.styles).forEach(([component_name, styles]) => {
-                        const targets = wrapper.find(`[class*="${component_name}"]`);
+                // Function to apply styles with retry logic
+                const applyStyles = (retryCount = 0) => {
+                    if (component_group.styles) {
+                        Object.entries(component_group.styles).forEach(([component_name, styles]) => {
+                            const targets = wrapper.find(`[class*="${component_name}"]`);
 
-                        if (targets.length !== 1) {
-                            console.error(`Found ${targets.length} components (should be 1) for: ${component_name}`);
-                            return;
-                        }
+                            if (targets.length > 1) {
+                                console.error(`Found ${targets.length} components (should be 1) for: ${component_name}`);
+                                return; // Skip this style application
+                            } else if (targets.length === 0) {
+                                if (retryCount < 3) { // Retry up to 3 times
+                                    console.log(`Component ${component_name} not found, retrying in 50ms... (attempt ${retryCount + 1})`);
+                                    setTimeout(() => applyStyles(retryCount + 1), 50);
+                                    return;
+                                } else {
+                                    console.error(`Component ${component_name} not found after 3 retries`);
+                                    return;
+                                }
+                            }
 
-                        const target = targets[0];
-                        const currentHtml = target.toHTML();
-                        
-                        // Remove and re-add the component to force style detection
-                        const parent = target.parent();
-                        const index = parent.components().indexOf(target);
-                        target.remove();
-                        
-                        // Create new element with updated styles
-                        const tempEl = document.createElement('div');
-                        tempEl.innerHTML = currentHtml;
-                        const element = tempEl.firstElementChild;
-                        
-                        // Add new styles as inline styles
-                        const styleString = Object.entries(styles)
-                            .map(([prop, val]) => `${prop}: ${val}`)
-                            .join('; ');
-                        
-                        const existingStyle = element.getAttribute('style') || '';
-                        element.setAttribute('style', existingStyle + '; ' + styleString);
-                        
-                        // Re-add the component
-                        const newComponent = parent.components().add(element.outerHTML, { at: index });
-                        
-                        // Apply the class
-                        if (component_name && !newComponent.getClasses().includes(component_name)) {
-                            newComponent.addClass(component_name);
-                        }
-                        
-                    });
-                }
+                            const target = targets[0];
+                            const currentHtml = target.toHTML();
+                            
+                            // Remove and re-add the component to force style detection
+                            const parent = target.parent();
+                            const index = parent.components().indexOf(target);
+                            target.remove();
+                            
+                            // Create new element with updated styles
+                            const tempEl = document.createElement('div');
+                            tempEl.innerHTML = currentHtml;
+                            const element = tempEl.firstElementChild;
+                            
+                            // Add new styles as inline styles
+                            const styleString = Object.entries(styles)
+                                .map(([prop, val]) => `${prop}: ${val}`)
+                                .join('; ');
+                            
+                            const existingStyle = element.getAttribute('style') || '';
+                            element.setAttribute('style', existingStyle + '; ' + styleString);
+                            
+                            // Re-add the component
+                            const newComponent = parent.components().add(element.outerHTML, { at: index });
+                            
+                            // Apply the class
+                            if (component_name && !newComponent.getClasses().includes(component_name)) {
+                                newComponent.addClass(component_name);
+                            }
+                        });
+                    }
+                    
+                    editor.refresh();
+                };
 
-                editor.refresh();
+                // Start applying styles
+                applyStyles();
             });
         }
 

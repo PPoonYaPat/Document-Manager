@@ -6,6 +6,7 @@ import boto3
 import requests
 from botocore.exceptions import ClientError
 
+logger = logging.getLogger(__name__)
 
 def upload_file_to_s3(input_path: str, s3_path: str) -> bool:
     if os.getenv("AWS_ACCESS_KEY_ID", None) is None:
@@ -69,6 +70,7 @@ def cnt_files_in_s3(prefix: str) -> int:
 
 
 def download_file_from_s3(s3_path: str, download_path: str) -> bool:
+    # download path, not download dir, in local machine
     if os.getenv("AWS_ACCESS_KEY_ID", None) is None:
         raise ValueError("AWS_ACCESS_KEY_ID is not set")
     s3_client = boto3.client("s3")
@@ -104,7 +106,7 @@ def delete_file_from_s3(s3_path: str) -> bool:
         return False
 
 
-def delete_dir_from_s3(s3_path: str) -> bool:
+def delete_dir_from_s3(s3_dir: str) -> bool:
     if os.getenv("AWS_ACCESS_KEY_ID", None) is None:
         raise ValueError("AWS_ACCESS_KEY_ID is not set")
     s3_client = boto3.client("s3")
@@ -113,16 +115,16 @@ def delete_dir_from_s3(s3_path: str) -> bool:
     if aws_bucket_name is None:
         raise ValueError("AWS_BUCKET_NAME is not set")
 
-    if not s3_path.endswith("/"):
-        s3_path += "/"
+    if not s3_dir.endswith("/"):
+        s3_dir += "/"
 
     try:
-        response = s3_client.list_objects_v2(Bucket=aws_bucket_name, Prefix=s3_path)
+        response = s3_client.list_objects_v2(Bucket=aws_bucket_name, Prefix=s3_dir)
         if "Contents" in response:
             for obj in response["Contents"]:
                 s3_client.delete_object(Bucket=aws_bucket_name, Key=obj["Key"])
         else:
-            print(f"No files found in {s3_path}")
+            print(f"No files found in {s3_dir}")
         return True
     except ClientError as e:
         logger.error(e)

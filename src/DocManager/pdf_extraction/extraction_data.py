@@ -1,16 +1,15 @@
 from dataclasses import dataclass
-
+from typing import Literal
 import fitz
-
 
 @dataclass
 class RectData:
-    type: str
+    type: Literal["Page-header", "Page-footer", "Text", "Formula", "Table", "Picture"]
     x0: float
     y0: float
     x1: float
     y1: float
-    text: str = ""
+    text: str | None = None
     org_x0: float = 0
     org_y0: float = 0
     org_x1: float = 0

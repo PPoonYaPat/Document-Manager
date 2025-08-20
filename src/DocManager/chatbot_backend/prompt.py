@@ -19,10 +19,15 @@ OUTPUT FORMAT:
 
 MODIFICATION RULES:
 1. For styles: Only include the styles that were actually changed
-2. For html: Return the WHOLE new HTML code if changed, or empty string "" if unchanged -> This must include <script> in case
+2. For html: Return the WHOLE new HTML code if changed, or empty string "" if unchanged
 3. Only return components that were actually modified
 4. If just answering a question, return empty components array
 5. Never include full HTML code in your message response - keep it concise
+
+NEW COMPONENT RULES:
+1. No inline styles - define styles separately
+2. Set class names as: "{{component-name}} {{unique-id}}"  
+3. Unique ID format: 1 lowercase letter + 3 digits (e.g., c546)
 
 EXAMPLE INTERACTION:
 
