@@ -4,6 +4,7 @@ import os
 import asyncio
 
 from DocManager.pdf_extraction.pdf_extraction import PDF_Extraction
+from model_client import get_model_client
 
 from dotenv import load_dotenv
 
@@ -34,6 +35,12 @@ Examples:
         required=False,
         help="Local OCR result path"
     )
+
+    parser.add_argument(
+        "-m", "--model-client",
+        action='store_true',
+        help="Model client"
+    )
     
     return parser.parse_args()
 
@@ -62,11 +69,19 @@ async def main():
         print(f"Processing file: {args.filename}")
         print(f"Output directory: {args.output}")
 
-        await PDF_Extraction.extract_pdf_without_model(
-            input_path=args.filename,
-            output_dir=args.output,
-            local_ocr_result_path=args.local_ocr_result_path,
-        )
+        if args.model_client is False:
+            await PDF_Extraction.extract_pdf_without_model(
+                input_path=args.filename,
+                output_dir=args.output,
+                local_ocr_result_path=args.local_ocr_result_path,
+            )
+        else:
+            await PDF_Extraction.extract_pdf_with_model(
+                input_path=args.filename,
+                output_dir=args.output,
+                model_client=get_model_client(),    
+                local_ocr_result_path=args.local_ocr_result_path,
+            )
 
         PDF_Extraction.make_editable_document(
             input_dir=args.output,

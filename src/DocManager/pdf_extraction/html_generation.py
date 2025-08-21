@@ -3,6 +3,7 @@ import os
 import re
 from pathlib import Path
 from typing import Any, Dict, List, Tuple
+from functools import cmp_to_key
 
 import fitz
 from autogen_agentchat.agents import AssistantAgent
@@ -25,8 +26,6 @@ class HTMLGenerator:
         page_width: float,
         page_height: float,
         model_client=None,
-        margin_top_decrease: int = 3,
-        padding_left_ratio: float = 0.8,
         max_agents: int = 10,
         text_limit: int = -1, # If we want to extract the style, we don't need to get the full text which might waste the token used when sending request to the llm model.
     ):
@@ -50,8 +49,6 @@ class HTMLGenerator:
         self.cnt = 0
         self.page_width = page_width
         self.page_height = page_height
-        self.margin_top_decrease = margin_top_decrease
-        self.padding_left_ratio = padding_left_ratio
         self.model_client = model_client
         self.max_agents = max_agents
         self.available_agents = asyncio.Queue()
@@ -212,13 +209,13 @@ class HTMLGenerator:
         margin_style = "margin-top: 0pt;"
         if (
             prev_y_coordinate != -1
-            and rect_data.y0 > prev_y_coordinate + self.margin_top_decrease
+            and rect_data.y0 > prev_y_coordinate
         ):
-            margin_style = f"margin-top: {(rect_data.y0 - prev_y_coordinate - self.margin_top_decrease)}pt;"
+            margin_style = f"margin-top: {(rect_data.y0 - prev_y_coordinate)}pt;"
 
         padding_style = "padding-left: 0pt;"
         if rect_data.x0 - bound_left > 20:
-            padding_style = f"padding-left: {(rect_data.x0 - bound_left) * self.padding_left_ratio}pt;"
+            padding_style = f"padding-left: {(rect_data.x0 - bound_left)}pt;"
 
         if len(html_parts) != 0:
             return (
@@ -303,13 +300,13 @@ class HTMLGenerator:
         margin_style = "margin-top: 0pt;"
         if (
             prev_y_coordinate != -1
-            and rect_data.y0 > prev_y_coordinate + self.margin_top_decrease
+            and rect_data.y0 > prev_y_coordinate
         ):
-            margin_style = f"margin-top: {(rect_data.y0 - prev_y_coordinate - self.margin_top_decrease)}pt;"
+            margin_style = f"margin-top: {(rect_data.y0 - prev_y_coordinate)}pt;"
 
         padding_style = "padding-left: 0pt;"
         if rect_data.x0 - bound_left > 20:
-            padding_style = f"padding-left: {(rect_data.x0 - bound_left) * self.padding_left_ratio}pt;"
+            padding_style = f"padding-left: {(rect_data.x0 - bound_left)}pt;"
 
         # Crop the image and save it to the images directory for the model to use
         image_path = os.path.join(self.images_dir, f"{class_name}.png")
@@ -482,8 +479,6 @@ class HTMLGenerator:
         error: int = 3,
     ) -> bool:
 
-        threshold = 1 if coord.type == "Text" else 10
-
         if self.is_column(
             coord, rect_data, bound_left, bound_right, spans, error=error
         ):
@@ -491,17 +486,14 @@ class HTMLGenerator:
             if new_y - previous_y <= 2:
                 return False
 
-            if self.has_multiple_lines(coord, spans) and (
-                coord.x0 > bound_left + error or coord.x1 < bound_right - error
-            ):
-                return False
-
             ranges = []
             for rect in rect_data:
-                if new_y <= rect.y0 and rect.y0 <= new_y + threshold:
+                threshold = 1 if coord.type == "Text" and rect.type == "Text" else 10
+                if new_y - threshold <= rect.y0 and rect.y0 <= new_y + threshold:
                     ranges.append((rect.x0, rect.x1))
 
             for rect in rect_data:
+                threshold = 1 if coord.type == "Text" and rect.type == "Text" else 10
                 if new_y + threshold < rect.y0 <= new_y + threshold + 20:
                     overlap = False
                     for rx0, rx1 in ranges:
@@ -510,6 +502,9 @@ class HTMLGenerator:
                             break
                     if not overlap:
                         return False
+
+            if self.has_multiple_lines(coord, spans) and len(ranges) == 1:
+                return False
 
             return True
         else:
@@ -632,9 +627,9 @@ class HTMLGenerator:
         margin_style = "margin-top: 0pt;"
         if (
             prev_y_coordinate != -1
-            and rect_data[0].y0 > prev_y_coordinate + self.margin_top_decrease
+            and rect_data[0].y0 > prev_y_coordinate
         ):
-            margin_style = f"margin-top: {(rect_data[0].y0 - prev_y_coordinate - self.margin_top_decrease)}pt;"
+            margin_style = f"margin-top: {(rect_data[0].y0 - prev_y_coordinate)}pt;"
 
         return (
             f"<div class='column_container' style='{margin_style}'>\n"
@@ -656,8 +651,14 @@ class HTMLGenerator:
             bound_left = self.leftmost_coordinates
         if bound_right is None:
             bound_right = self.rightmost_coordinates
-
-        rect_data.sort(key=lambda r: (r.y0, r.x0))
+        
+        def compare_rects(a, b):
+            if abs(a.y0 - b.y0) < 1:
+                return a.x0 - b.x0
+            else:
+                return a.y0 - b.y0
+        
+        rect_data.sort(key=cmp_to_key(compare_rects))
         html_parts = []
         prev_y_coordinate = -1
 

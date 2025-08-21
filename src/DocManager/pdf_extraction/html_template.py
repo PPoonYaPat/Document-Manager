@@ -1246,6 +1246,7 @@ editable_html_template = """
             const button = document.querySelector(`#input-container-${className} button`);
             const message = input.value;
             const rag_input = getRAGSettings(className);
+            const page_number = className.replace('gjs', '');
 
             if (rag_input && rag_input[0] == -1) {
                 alert("Start page must be less than end page and between 1 and ffff-length");
@@ -1276,7 +1277,8 @@ editable_html_template = """
                         components: result,
                         message: message,
                         tag: "llm_call",
-                        rag_range: getRAGSettings(className)
+                        rag_range: getRAGSettings(className),
+                        html_content: extractBody([page_number])
                     })
                 });
 
@@ -1303,7 +1305,8 @@ editable_html_template = """
                             components: extracted_components,
                             message: message,
                             tag: "tool_response",
-                            rag_range: null
+                            rag_range: null,
+                            html_content: extractBody(extractPage(data.components))
                         })
                     });
                     data = await response.json();
@@ -1350,7 +1353,14 @@ editable_html_template = """
 
                 const grapesComponent = grapesComponents[0];
                 
-                if (component_group.html && component_group.html.trim() !== '') {
+                if (component_group.html != null) {
+
+                    if (component_group.html == "") {
+                        grapesComponent.remove();
+                        editor.refresh();
+                        return;
+                    }
+
                     const tempDiv = document.createElement('div');
                     tempDiv.innerHTML = component_group.html;
                     const newElement = tempDiv.firstElementChild;
@@ -1621,8 +1631,55 @@ editable_html_template = """
             `;
         }
 
+        function extractPage(component_dict) {
+            let page_list = [];
+            component_dict.forEach(component => {
+                if (!page_list.includes(component.page)) {
+                    page_list.push(component.page)
+                }
+            })
+
+            return page_list.sort((a, b) => a - b);
+        }
+
+        function extractBody(page_numbers) {
+            result = ""
+            
+            page_numbers.forEach(page_number => {
+                const editorId = `gjs${page_number}`;
+            
+                if (!editors[editorId]) {
+                    console.error(`Editor not found for page ${page_number}`);
+                    return null;
+                }
+
+                try {
+                    const wrapper = editors[editorId].DomComponents.getWrapper();
+                    const targetComponents = wrapper.find(`[class*="body_${page_number}"]`);
+                    
+                    if (!targetComponents || targetComponents.length === 0) {
+                        console.warn(`No component found with class containing "body_${page_number}" on page ${page_number}`);
+                        return null;
+                    }
+
+                    if (targetComponents.length != 1) {
+                        console.error(`Multiple components found with class containing "body_${page_number}" on page ${page_number}`);
+                        return null;
+                    }
+                    
+                    result += targetComponents[0].toHTML()
+
+                } catch (error) {
+                    console.error(`Error extracting body_${page_number} component on page ${page_number}:`, error);
+                    return null;
+                }
+            });
+
+            return result;
+        }
+
         function extractComponent(component_dict) {
-            const allExtractedDivs = [];
+            let allExtractedDivs = [];
 
             component_dict.forEach(component => {
                 const page_number = component.page;

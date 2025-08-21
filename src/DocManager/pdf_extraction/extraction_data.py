@@ -46,8 +46,8 @@ class RectData:
         overlap_width = max(0, overlap_x1 - overlap_x0)
         rect_width = rect.x1 - rect.x0
 
-        return (overlap_height + 1 >= 0.7 * rect_height) and (
-            overlap_width + 1 >= 0.7 * rect_width
+        return (overlap_height + 1 >= 0.9 * rect_height) and (
+            overlap_width + 1 >= 0.9 * rect_width
         )
 
     def get_org_rect(self, extend_by: int = 0):

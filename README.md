@@ -88,7 +88,18 @@ Choose one of the following options to set up DotsOCR for document processing:
 - Use the online DotsOCR service at [dotsocr.xiaohongshu.com](https://dotsocr.xiaohongshu.com/)
 - Process your documents directly through the web interface
 
-### Step 2: Convert PDF to Editable HTML
+### Step 2: Set the Model Client
+
+Configure your AI models in [model_client.py](model_client.py) :
+
+- **`model_client`** : Claude Sonnet 4 (main processing)
+- **`small_model_client`** : Claude Haiku 3.5 (lightweight tasks)
+
+You can change to your preferred models by following the [Autogen model configuration guide](https://microsoft.github.io/autogen/stable//user-guide/agentchat-user-guide/tutorial/models).
+
+**NOTE:** The quality of extraction and editing also depends on the model used, so you may balance between model quality and cost.
+
+### Step 3: Convert PDF to Editable HTML
 **Option A:** Running on a cloud service
 ```bash
 python parse.py -f <input_path> -o <output_dir>
@@ -128,15 +139,14 @@ output_dir/
 └── final_editable.html   # Editable version with editor
 ```
 
-### Step 3: Start the Backend Server
+### Step 4: Start the Backend Server
 ```bash
 python main_server.py -d <output_dir>
 ```
 
-**Note:** The server uses Anthropic by default. Check `model_client` in [main_server.py](main_server.py) to configure your preferred LLM provider.
 
 **Parameters:**
 - `output_dir` - Directory containing the HTML files from Step 2
 
-### Step 4: Start Editing
+### Step 5: Start Editing
 Open `final_editable.html` in your browser to begin editing your document with AI assistance.

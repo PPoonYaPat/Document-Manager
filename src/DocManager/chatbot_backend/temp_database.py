@@ -169,13 +169,12 @@ class TempDatabase:
                         "chunk_index": chunk_index
                     })
 
-            self.collection.add(
-                ids=ids,
-                documents=documents,
-                metadatas=metadatas
-            )
-
             if len(documents) > 0:
+                self.collection.add(
+                    ids=ids,
+                    documents=documents,
+                    metadatas=metadatas
+                )
                 print(f"Successfully added {len(documents)} chunks")
 
             return len(documents)
